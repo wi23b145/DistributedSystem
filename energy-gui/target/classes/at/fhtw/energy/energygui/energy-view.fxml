@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="15.0" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="at.fhtw.energy.energygui.EnergyGuiController">
+  <padding>
+    <Insets top="20.0" left="20.0" right="20.0" bottom="20.0"/>
+  </padding>
+
+  <!-- Aktueller Status -->
+  <Label text="Aktueller Status" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+
+  <HBox spacing="10" alignment="CENTER_LEFT">
+    <Label text="Community Pool:"/>
+    <Label fx:id="lblCommunityPool" text="-"/>
+  </HBox>
+
+  <HBox spacing="10" alignment="CENTER_LEFT">
+    <Label text="Grid Portion:"/>
+    <Label fx:id="lblGridPortion" text="-"/>
+  </HBox>
+
+  <Button text="Refresh" onAction="#onRefresh"/>
+
+  <Separator/>
+
+  <!-- Historische Daten -->
+  <Label text="Historische Daten" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+
+  <HBox spacing="10" alignment="CENTER_LEFT">
+    <Label text="Start:"/>
+    <DatePicker fx:id="startPicker"/>
+  </HBox>
+
+  <HBox spacing="10" alignment="CENTER_LEFT">
+    <Label text="End:"/>
+    <DatePicker fx:id="endPicker"/>
+  </HBox>
+
+  <Button text="Show Data" onAction="#onShowData"/>
+
+  <TextArea fx:id="txtHistorical" prefHeight="150" editable="false"
+            promptText="Hier erscheinen die historischen Daten..."/>
+
+</VBox>
