@@ -1,6 +1,19 @@
 package at.fhtw.energy.energygui;
 
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
-public class EnergyGuiApplication {
+import java.io.IOException;
 
+public class EnergyGuiApplication extends Application {
+    @Override
+    public void start(Stage stage) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(EnergyGuiApplication.class.getResource("energy-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 600, 400);
+        stage.setTitle("Energy Community Monitor");
+        stage.setScene(scene);
+        stage.show();
+    }
 }
