@@ -11,7 +11,7 @@ public class EnergyGuiApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(EnergyGuiApplication.class.getResource("energy-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 600, 400);
+        Scene scene = new Scene(fxmlLoader.load(), 700, 550);
         stage.setTitle("Energy Community Monitor");
         stage.setScene(scene);
         stage.show();

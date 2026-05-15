@@ -5,6 +5,13 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.4</version>
+        <relativePath/>
+    </parent>
+
     <groupId>at.fhtw.energy</groupId>
     <artifactId>energy-system</artifactId>
     <version>1.0-SNAPSHOT</version>
@@ -13,18 +20,10 @@
     <modules>
         <module>energy-api</module>
         <module>energy-gui</module>
+        <module>energy-producer</module>
+        <module>energy-user</module>
+        <module>usage-service</module>
+        <module>current-percentage-service</module>
     </modules>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.4.4</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
 </project>
