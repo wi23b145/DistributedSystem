@@ -26,10 +26,9 @@ public class EnergyProducerService {
     public void sendProducerMessage() {
         double cloudCover = weatherService.getCloudCover();
 
-        // je weniger Wolken, desto mehr Energie
+        // FIX 1: kein minKwh mehr — bei viel Bewölkung wirklich wenig/nichts
         double maxKwh = 0.008 * (1 - cloudCover / 100.0);
-        double minKwh = 0.001;
-        double kwh = minKwh + (maxKwh - minKwh) * random.nextDouble();
+        double kwh = maxKwh * random.nextDouble(); // von 0 bis maxKwh
         kwh = Math.round(kwh * 10000.0) / 10000.0;
 
         String datetime = LocalDateTime.now()
