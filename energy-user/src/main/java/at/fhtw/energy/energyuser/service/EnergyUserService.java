@@ -41,16 +41,14 @@ public class EnergyUserService {
         int hour = LocalTime.now().getHour();
         double baseKwh;
 
-        // Peak hours: morgens 7-9 und abends 17-20
         if ((hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 20)) {
-            baseKwh = 0.006; // hoher Verbrauch
+            baseKwh = 0.006;
         } else if (hour >= 22 || hour <= 5) {
-            baseKwh = 0.001; // niedriger Verbrauch nachts
+            baseKwh = 0.001;
         } else {
-            baseKwh = 0.003; // normaler Verbrauch
+            baseKwh = 0.003;
         }
 
-        // zufällige Variation ±20%
         double variation = 1.0 + (random.nextDouble() * 0.4 - 0.2);
         double kwh = baseKwh * variation;
         return Math.round(kwh * 10000.0) / 10000.0;
