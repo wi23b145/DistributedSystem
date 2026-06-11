@@ -113,6 +113,11 @@ public class EnergyGuiController {
 
         String[] entries = json.replace("[{", "").replace("}]", "").split("\\},\\{");
 
+        // FIX: jeder Eintrag braucht wieder eine schließende }
+        for (int i = 0; i < entries.length; i++) {
+            entries[i] = entries[i] + "}";
+        }
+
         // Chronologisch sortieren
         Arrays.sort(entries, (a, b) -> {
             String hourA = extractString(a, "hour");
@@ -128,7 +133,8 @@ public class EnergyGuiController {
 
             // Kartenfarbe je nach Datenlage
             boolean hasData = produced > 0 || used > 0 || grid > 0;
-            String borderColor = hasData ? "#64ffda" : "#e94560";
+            boolean hasGrid = grid > 0;
+            String borderColor = hasGrid ? "#f7931a" : hasData ? "#64ffda" : "#e94560";
 
             VBox card = new VBox(6);
             card.setStyle(
@@ -152,7 +158,8 @@ public class EnergyGuiController {
             lblUsed.setStyle("-fx-text-fill: #ccd6f6; -fx-font-family: 'Courier New'; -fx-font-size: 11;");
 
             Label lblGrid = new Label(String.format("🔌 Grid:        %.4f kWh", grid));
-            lblGrid.setStyle("-fx-text-fill: #f7931a; -fx-font-family: 'Courier New'; -fx-font-size: 11;");
+            String gridColor = hasGrid ? "#f7931a" : "#8892b0";
+            lblGrid.setStyle("-fx-text-fill: " + gridColor + "; -fx-font-family: 'Courier New'; -fx-font-size: 11;");
 
             card.getChildren().addAll(lblHour, lblProduced, lblUsed, lblGrid);
             flowHistorical.getChildren().add(card);
@@ -173,12 +180,19 @@ public class EnergyGuiController {
         int idx = json.indexOf(search);
         if (idx == -1) return 0;
         int start = idx + search.length();
-        int end = json.indexOf(",", start);
-        if (end == -1) end = json.indexOf("}", start);
+
+        int endComma = json.indexOf(",", start);
+        int endBrace = json.indexOf("}", start);
+
+        int end;
+        if (endComma == -1) end = endBrace;
+        else if (endBrace == -1) end = endComma;
+        else end = Math.min(endComma, endBrace);
+
         try {
             return Double.parseDouble(json.substring(start, end).trim());
         } catch (Exception e) {
             return 0;
         }
     }
-}
+    }
