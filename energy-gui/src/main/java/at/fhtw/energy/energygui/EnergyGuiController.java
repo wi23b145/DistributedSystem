@@ -1,5 +1,8 @@
 package at.fhtw.energy.energygui;
 
+import at.fhtw.energy.energygui.dto.CurrentEnergyDto;
+import at.fhtw.energy.energygui.dto.HistoricalEnergyDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.fxml.FXML;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -24,6 +27,7 @@ public class EnergyGuiController {
     @FXML private FlowPane flowHistorical;
 
     private final HttpClient client = HttpClient.newHttpClient();
+    private final ObjectMapper mapper = new ObjectMapper();
     private static final String API_BASE = "http://localhost:8080/energy";
     private Timeline autoRefresh;
 
@@ -48,14 +52,11 @@ public class EnergyGuiController {
             HttpResponse<String> response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
 
-            String body = response.body();
-            double depleted = extractDouble(body, "communityDepleted");
-            double grid = extractDouble(body, "gridPortion");
-            String hour = extractString(body, "hour");
+            CurrentEnergyDto dto = mapper.readValue(response.body(), CurrentEnergyDto.class);
 
-            lblCommunityPool.setText(String.format("%.2f%%", depleted));
-            lblGridPortion.setText(String.format("%.2f%%", grid));
-            lblLastUpdate.setText("Letzte Aktualisierung: " + hour);
+            lblCommunityPool.setText(String.format("%.2f%%", dto.communityDepleted));
+            lblGridPortion.setText(String.format("%.2f%%", dto.gridPortion));
+            lblLastUpdate.setText("Letzte Aktualisierung: " + dto.hour);
 
         } catch (Exception e) {
             lblCommunityPool.setText("Fehler!");
@@ -111,88 +112,51 @@ public class EnergyGuiController {
             return;
         }
 
-        String[] entries = json.replace("[{", "").replace("}]", "").split("\\},\\{");
-
-        // FIX: jeder Eintrag braucht wieder eine schließende }
-        for (int i = 0; i < entries.length; i++) {
-            entries[i] = entries[i] + "}";
-        }
-
-        // Chronologisch sortieren
-        Arrays.sort(entries, (a, b) -> {
-            String hourA = extractString(a, "hour");
-            String hourB = extractString(b, "hour");
-            return hourA.compareTo(hourB);
-        });
-
-        for (String entry : entries) {
-            String hour = extractString(entry, "hour");
-            double produced = extractDouble(entry, "communityProduced");
-            double used = extractDouble(entry, "communityUsed");
-            double grid = extractDouble(entry, "gridUsed");
-
-            // Kartenfarbe je nach Datenlage
-            boolean hasData = produced > 0 || used > 0 || grid > 0;
-            boolean hasGrid = grid > 0;
-            String borderColor = hasGrid ? "#f7931a" : hasData ? "#64ffda" : "#e94560";
-
-            VBox card = new VBox(6);
-            card.setStyle(
-                    "-fx-background-color: #16213e;" +
-                            "-fx-padding: 12;" +
-                            "-fx-background-radius: 6;" +
-                            "-fx-border-color: " + borderColor + ";" +
-                            "-fx-border-radius: 6;" +
-                            "-fx-border-width: 1;" +
-                            "-fx-min-width: 200;" +
-                            "-fx-max-width: 200;"
-            );
-
-            Label lblHour = new Label("⏱ " + hour);
-            lblHour.setStyle("-fx-text-fill: #e94560; -fx-font-weight: bold; -fx-font-size: 11;");
-
-            Label lblProduced = new Label(String.format("⚡ Produziert:  %.4f kWh", produced));
-            lblProduced.setStyle("-fx-text-fill: #64ffda; -fx-font-family: 'Courier New'; -fx-font-size: 11;");
-
-            Label lblUsed = new Label(String.format("🔋 Verbraucht:  %.4f kWh", used));
-            lblUsed.setStyle("-fx-text-fill: #ccd6f6; -fx-font-family: 'Courier New'; -fx-font-size: 11;");
-
-            Label lblGrid = new Label(String.format("🔌 Grid:        %.4f kWh", grid));
-            String gridColor = hasGrid ? "#f7931a" : "#8892b0";
-            lblGrid.setStyle("-fx-text-fill: " + gridColor + "; -fx-font-family: 'Courier New'; -fx-font-size: 11;");
-
-            card.getChildren().addAll(lblHour, lblProduced, lblUsed, lblGrid);
-            flowHistorical.getChildren().add(card);
-        }
-    }
-
-    private String extractString(String json, String key) {
-        String search = "\"" + key + "\":\"";
-        int idx = json.indexOf(search);
-        if (idx == -1) return "-";
-        int start = idx + search.length();
-        int end = json.indexOf("\"", start);
-        return json.substring(start, end);
-    }
-
-    private double extractDouble(String json, String key) {
-        String search = "\"" + key + "\":";
-        int idx = json.indexOf(search);
-        if (idx == -1) return 0;
-        int start = idx + search.length();
-
-        int endComma = json.indexOf(",", start);
-        int endBrace = json.indexOf("}", start);
-
-        int end;
-        if (endComma == -1) end = endBrace;
-        else if (endBrace == -1) end = endComma;
-        else end = Math.min(endComma, endBrace);
-
         try {
-            return Double.parseDouble(json.substring(start, end).trim());
+            HistoricalEnergyDto[] entries = mapper.readValue(json, HistoricalEnergyDto[].class);
+
+            Arrays.sort(entries, (a, b) -> a.hour.compareTo(b.hour));
+
+            for (HistoricalEnergyDto entry : entries) {
+                boolean hasData = entry.communityProduced > 0
+                        || entry.communityUsed > 0
+                        || entry.gridUsed > 0;
+                boolean hasGrid = entry.gridUsed > 0;
+                String borderColor = hasGrid ? "#f7931a" : hasData ? "#64ffda" : "#e94560";
+
+                VBox card = new VBox(6);
+                card.setStyle(
+                        "-fx-background-color: #16213e;" +
+                                "-fx-padding: 12;" +
+                                "-fx-background-radius: 6;" +
+                                "-fx-border-color: " + borderColor + ";" +
+                                "-fx-border-radius: 6;" +
+                                "-fx-border-width: 1;" +
+                                "-fx-min-width: 200;" +
+                                "-fx-max-width: 200;"
+                );
+
+                Label lblHour = new Label("⏱ " + entry.hour);
+                lblHour.setStyle("-fx-text-fill: #e94560; -fx-font-weight: bold; -fx-font-size: 11;");
+
+                Label lblProduced = new Label(String.format("⚡ Produziert:  %.4f kWh", entry.communityProduced));
+                lblProduced.setStyle("-fx-text-fill: #64ffda; -fx-font-family: 'Courier New'; -fx-font-size: 11;");
+
+                Label lblUsed = new Label(String.format("🔋 Verbraucht:  %.4f kWh", entry.communityUsed));
+                lblUsed.setStyle("-fx-text-fill: #ccd6f6; -fx-font-family: 'Courier New'; -fx-font-size: 11;");
+
+                Label lblGrid = new Label(String.format("🔌 Grid:        %.4f kWh", entry.gridUsed));
+                String gridColor = hasGrid ? "#f7931a" : "#8892b0";
+                lblGrid.setStyle("-fx-text-fill: " + gridColor + "; -fx-font-family: 'Courier New'; -fx-font-size: 11;");
+
+                card.getChildren().addAll(lblHour, lblProduced, lblUsed, lblGrid);
+                flowHistorical.getChildren().add(card);
+            }
+
         } catch (Exception e) {
-            return 0;
+            Label err = new Label("❌ Fehler beim Laden der Daten!");
+            err.setStyle("-fx-text-fill: #e94560; -fx-font-size: 13;");
+            flowHistorical.getChildren().add(err);
         }
     }
-    }
+}
