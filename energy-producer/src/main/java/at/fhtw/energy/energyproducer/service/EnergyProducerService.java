@@ -2,7 +2,8 @@ package at.fhtw.energy.energyproducer.service;
 
 import at.fhtw.energy.energyproducer.config.RabbitMQConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,20 +23,37 @@ public class EnergyProducerService {
         this.weatherService = weatherService;
     }
 
-    @Scheduled(fixedDelay = 3000) // alle 3 Sekunden
-    public void sendProducerMessage() {
+    @EventListener(ApplicationReadyEvent.class)
+    public void startProducing() {
+        Thread thread = new Thread(() -> {
+            while (true) {
+                try {
+                    sendProducerMessage();
+                    // zufällig zwischen 1-5 Sekunden
+                    int delay = random.nextInt(4000) + 1000;
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void sendProducerMessage() {
         double cloudCover = weatherService.getCloudCover();
 
-        // FIX 1: kein minKwh mehr — bei viel Bewölkung wirklich wenig/nichts
         double maxKwh = 0.008 * (1 - cloudCover / 100.0);
-        double kwh = maxKwh * random.nextDouble(); // von 0 bis maxKwh
+        double kwh = maxKwh * random.nextDouble();
         kwh = Math.round(kwh * 10000.0) / 10000.0;
 
         String datetime = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
 
         String message = String.format(
-                java.util.Locale.US,  // ← das hinzufügen!
+                java.util.Locale.US,
                 "{\"type\":\"PRODUCER\",\"association\":\"COMMUNITY\"," +
                         "\"kwh\":%.4f,\"datetime\":\"%s\"}",
                 kwh, datetime);
