@@ -1,6 +1,7 @@
 
 package at.fhtw.energy.energyapi.dto;
 
+// DTO for GET /energy/historical - carries hourly kWh data for selected date range
 public class HistoricalEnergyDto {
     private String hour;
     private double communityProduced;
@@ -14,7 +15,7 @@ public class HistoricalEnergyDto {
         this.communityUsed = communityUsed;
         this.gridUsed = gridUsed;
     }
-
+    // Getters used by Jackson to serialize this DTO to JSON
     public String getHour() { return hour; }
     public double getCommunityProduced() { return communityProduced; }
     public double getCommunityUsed() { return communityUsed; }

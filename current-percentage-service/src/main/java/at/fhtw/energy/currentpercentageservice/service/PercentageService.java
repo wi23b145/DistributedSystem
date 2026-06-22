@@ -33,6 +33,7 @@ public class PercentageService {
 
             UsageDataEntity usage = usageOpt.get();
 
+            //Lokale Variablen
             double communityProduced = usage.getCommunityProduced();
             double communityUsed = usage.getCommunityUsed();
             double gridUsed = usage.getGridUsed();

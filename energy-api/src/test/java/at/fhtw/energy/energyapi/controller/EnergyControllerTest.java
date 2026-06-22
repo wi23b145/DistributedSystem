@@ -14,16 +14,17 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
+// Tests only the web layer - no real DB or service needed
 @WebMvcTest(EnergyController.class)
 class EnergyControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private MockMvc mockMvc; // simulates HTTP requests without starting a real server
 
     @MockitoBean
-    private EnergyService energyService;
+    private EnergyService energyService; // mocked - returns predefined values instead of hitting DB
 
+    // Tests that GET /energy/current returns HTTP 200 and correct percentage values
     @Test
     void getCurrent_returns200_withData() throws Exception {
         when(energyService.getCurrentEnergy())
@@ -36,6 +37,7 @@ class EnergyControllerTest {
                 .andExpect(jsonPath("$.hour").value("2026-05-15T14:00"));
     }
 
+    // Tests that GET /energy/current still returns HTTP 200 when DB is empty (fallback DTO)
     @Test
     void getCurrent_returns200_withNoData() throws Exception {
         when(energyService.getCurrentEnergy())
@@ -48,6 +50,7 @@ class EnergyControllerTest {
                 .andExpect(jsonPath("$.gridPortion").value(0));
     }
 
+    // Tests that GET /energy/historical returns HTTP 200 and correct kWh values for given date range
     @Test
     void getHistorical_returns200_withData() throws Exception {
         when(energyService.getHistoricalEnergy("2026-05-15T00:00:00", "2026-05-15T23:00:00"))
@@ -62,6 +65,7 @@ class EnergyControllerTest {
                 .andExpect(jsonPath("$[0].gridUsed").value(0.1));
     }
 
+    // Tests that GET /energy/historical returns HTTP 200 and empty array when no data exists for range
     @Test
     void getHistorical_returns200_withEmptyList() throws Exception {
         when(energyService.getHistoricalEnergy("2026-01-01T00:00:00", "2026-01-01T23:00:00"))

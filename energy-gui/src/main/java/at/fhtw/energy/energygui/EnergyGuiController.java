@@ -16,7 +16,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Arrays;
-
+// JavaFX Controller - handles all GUI logic, fetches data from energy-api
 public class EnergyGuiController {
 
     @FXML private Label lblCommunityPool;
@@ -40,7 +40,7 @@ public class EnergyGuiController {
         autoRefresh.play();
         onRefresh();
     }
-
+    // Called by Refresh button and auto-refresh timer
     @FXML
     public void onRefresh() {
         try {
@@ -64,7 +64,7 @@ public class EnergyGuiController {
             lblLastUpdate.setText("Keine Verbindung zur API");
         }
     }
-
+    // Called by "Anzeigen" button
     @FXML
     public void onShowData() {
         if (startPicker.getValue() == null || endPicker.getValue() == null) {
@@ -81,6 +81,7 @@ public class EnergyGuiController {
         flowHistorical.getChildren().add(loading);
 
         try {
+            // DatePicker returns LocalDate - atStartOfDay() adds T00:00 for API compatibility
             String start = startPicker.getValue().atStartOfDay().toString();
             String end = endPicker.getValue().atStartOfDay().toString();
 
@@ -101,7 +102,7 @@ public class EnergyGuiController {
             flowHistorical.getChildren().add(err);
         }
     }
-
+    // Builds a visual card
     private void buildHistoricalCards(String json) {
         flowHistorical.getChildren().clear();
 
@@ -113,6 +114,7 @@ public class EnergyGuiController {
         }
 
         try {
+            // Jackson deserializes JSON array into DTO array
             HistoricalEnergyDto[] entries = mapper.readValue(json, HistoricalEnergyDto[].class);
 
             Arrays.sort(entries, (a, b) -> a.hour.compareTo(b.hour));

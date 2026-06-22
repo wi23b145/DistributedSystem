@@ -17,7 +17,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-
+// Pure Mockito unit test - no Spring context needed
+// @Mock and @InjectMocks are processed automatically by MockitoExtension
 @ExtendWith(MockitoExtension.class)
 class EnergyServiceTest {
 
@@ -30,6 +31,7 @@ class EnergyServiceTest {
     @InjectMocks
     private EnergyService energyService;
 
+    // Tests that getCurrentEnergy() correctly maps entity fields to DTO when DB has data
     @Test
     void getCurrentEnergy_returnsData_whenEntryExists() {
         PercentageDataEntity entity = new PercentageDataEntity();
@@ -46,6 +48,7 @@ class EnergyServiceTest {
         assertThat(result.getHour()).isEqualTo("2026-05-15T14:00");
     }
 
+    // Tests that getCurrentEnergy() returns fallback DTO with "No data" when DB is empty
     @Test
     void getCurrentEnergy_returnsNoData_whenTableEmpty() {
         when(percentageDataRepository.findAll()).thenReturn(List.of());
@@ -57,6 +60,7 @@ class EnergyServiceTest {
         assertThat(result.getGridPortion()).isEqualTo(0);
     }
 
+    // Tests that getHistoricalEnergy() correctly maps entity fields to DTO list for given date range
     @Test
     void getHistoricalEnergy_returnsData_whenEntriesExist() {
         LocalDateTime start = LocalDateTime.of(2026, 5, 15, 0, 0);
@@ -81,6 +85,7 @@ class EnergyServiceTest {
         assertThat(result.get(0).getGridUsed()).isEqualTo(0.1);
     }
 
+    // Tests that getHistoricalEnergy() returns empty list when no data exists for given range
     @Test
     void getHistoricalEnergy_returnsEmptyList_whenNoEntriesExist() {
         LocalDateTime start = LocalDateTime.of(2026, 1, 1, 0, 0);
