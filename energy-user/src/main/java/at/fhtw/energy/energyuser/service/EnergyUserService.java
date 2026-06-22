@@ -2,7 +2,8 @@ package at.fhtw.energy.energyuser.service;
 
 import at.fhtw.energy.energyuser.config.RabbitMQConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,8 +21,26 @@ public class EnergyUserService {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    @Scheduled(fixedDelay = 5000) // alle 5 Sekunden
-    public void sendUserMessage() {
+    @EventListener(ApplicationReadyEvent.class)
+    public void startConsuming() {
+        Thread thread = new Thread(() -> {
+            while (true) {
+                try {
+                    sendUserMessage();
+                    // zufällig zwischen 1-5 Sekunden
+                    int delay = random.nextInt(4000) + 1000;
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void sendUserMessage() {
         double kwh = calculateKwh();
 
         String datetime = LocalDateTime.now()
