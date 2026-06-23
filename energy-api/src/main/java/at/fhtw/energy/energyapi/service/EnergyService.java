@@ -23,16 +23,14 @@ public class EnergyService {
     }
     // Returns current community pool % and grid portion %
     public CurrentEnergyDto getCurrentEnergy() {
-        // Tabelle hat laut Spec immer nur 1 Zeile - einfach den ersten Eintrag holen
-        return percentageDataRepository.findAll()
-                .stream()
-                .findFirst()
+        return percentageDataRepository.findTopByOrderByHourDesc()
                 .map(e -> new CurrentEnergyDto(
                         e.getHour().toString(),
                         e.getCommunityDepleted(),
                         e.getGridPortion()))
                 .orElse(new CurrentEnergyDto("No data", 0, 0));
     }
+
     // Returns hourly kWh data for selected date range
     public List<HistoricalEnergyDto> getHistoricalEnergy(String start, String end) {
         LocalDateTime startTime = LocalDateTime.parse(start);
