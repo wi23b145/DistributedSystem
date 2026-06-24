@@ -44,7 +44,7 @@ public class EnergyProducerService {
 
     private void sendProducerMessage() {
         double cloudCover = weatherService.getCloudCover();
-
+        System.out.println(cloudCover);
         double maxKwh = 0.008 * (1 - cloudCover / 100.0);
         double kwh = maxKwh * random.nextDouble();
         kwh = Math.round(kwh * 10000.0) / 10000.0;

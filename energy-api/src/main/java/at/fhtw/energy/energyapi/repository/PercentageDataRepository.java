@@ -8,6 +8,6 @@ import java.util.Optional;
 // Repository for percentage_data table - used by EnergyService for /energy/current
 @Repository
 public interface PercentageDataRepository extends JpaRepository<PercentageDataEntity, LocalDateTime> {
-    // returns the most recent entry - Optional because table could be empty on first start
+    // returns the most recent entry ordered by hour descending - Optional because table could be empty on first start
     Optional<PercentageDataEntity> findTopByOrderByHourDesc();
 }

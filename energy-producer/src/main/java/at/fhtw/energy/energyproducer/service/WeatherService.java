@@ -29,12 +29,13 @@ public class WeatherService {
 
             String body = response.body();
             // extract cloud_cover value
-            int idx = body.indexOf("\"cloud_cover\":");
+            int idx = body.indexOf("\"cloud_cover\":", 300);
             if (idx == -1) return 50.0;
             int start = idx + 14;
             int end = body.indexOf(",", start);
             if (end == -1) end = body.indexOf("}", start);
             return Double.parseDouble(body.substring(start, end).trim());
+
 
         } catch (Exception e) {
             return 50.0; // default wenn API nicht erreichbar
